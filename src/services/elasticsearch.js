@@ -40,8 +40,26 @@ async function initializeIndex() {
         body: {
           mappings: {
             properties: {
-              spanish: { type: 'text', analyzer: 'spanish' },
-              english: { type: 'text', analyzer: 'english' },
+              spanish: {
+                type: 'text',
+                analyzer: 'spanish',
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    ignore_above: 256,
+                  },
+                },
+              },
+              english: {
+                type: 'text',
+                analyzer: 'english',
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    ignore_above: 256,
+                  },
+                },
+              },
             },
           },
         },
@@ -88,9 +106,24 @@ async function searchSentences(query) {
       index: INDEX_NAME,
       body: {
         query: {
-          multi_match: {
-            query: query,
-            fields: ['spanish', 'english'],
+          bool: {
+            should: [
+              {
+                multi_match: {
+                  query: query,
+                  fields: ['spanish^2', 'english'],
+                  type: 'best_fields',
+                  fuzziness: 'AUTO',
+                },
+              },
+              {
+                multi_match: {
+                  query: query,
+                  fields: ['spanish.keyword^2', 'english.keyword'],
+                  type: 'phrase',
+                },
+              },
+            ],
           },
         },
       },
