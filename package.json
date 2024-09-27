@@ -1,0 +1,17 @@
+{
+  "name": "spanish-english-sentence-search",
+  "version": "1.0.0",
+  "description": "Search application for Spanish-English sentence pairs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "express": "4.18.2",
+    "@elastic/elasticsearch": "7.17.0",
+    "undici": "5.22.1"
+  }
+}
