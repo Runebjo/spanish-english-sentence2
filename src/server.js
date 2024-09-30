@@ -30,11 +30,11 @@ async function loadAndIndexData() {
       const data = await fs.readFile(filePath, 'utf8');
       const fileContent = JSON.parse(data);
 
-      if (fileContent.translations) {
-        allSentences = allSentences.concat(fileContent.translations);
+      if (Array.isArray(fileContent)) {
+        allSentences = allSentences.concat(fileContent);
       } else {
         console.warn(
-          `File ${file} does not contain a 'translations' array. Skipping.`
+          `File ${file} does not contain an array of sentences. Skipping.`
         );
       }
     }
