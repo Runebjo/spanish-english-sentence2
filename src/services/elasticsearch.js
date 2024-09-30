@@ -5,6 +5,7 @@ const client = new Client({
 });
 
 const INDEX_NAME = 'sentences';
+const CHUNK_SIZE = 1000; // Adjust this value based on your data size and Elasticsearch setup
 
 async function initializeIndex() {
   try {
@@ -33,12 +34,23 @@ async function initializeIndex() {
 
 async function indexSentences(sentences) {
   try {
-    const body = sentences.flatMap((sentence) => [
-      { index: { _index: INDEX_NAME } },
-      sentence,
-    ]);
-    await client.bulk({ refresh: true, body });
-    console.log(`Indexed ${sentences.length} sentences.`);
+    console.log(`Starting to index ${sentences.length} sentences...`);
+    for (let i = 0; i < sentences.length; i += CHUNK_SIZE) {
+      const chunk = sentences.slice(i, i + CHUNK_SIZE);
+      const body = chunk.flatMap((sentence) => [
+        { index: { _index: INDEX_NAME } },
+        {
+          spanish: sentence.spanish,
+          english: sentence.english,
+        },
+      ]);
+      const { body: bulkResponse } = await client.bulk({ refresh: true, body });
+      if (bulkResponse.errors) {
+        console.error('Errors in bulk operation:', bulkResponse.errors);
+      }
+      console.log(`Indexed sentences ${i + 1} to ${i + chunk.length}`);
+    }
+    console.log(`Finished indexing ${sentences.length} sentences.`);
   } catch (error) {
     console.error('Error indexing sentences:', error);
     throw error;
@@ -60,6 +72,7 @@ async function searchSentences(query) {
         },
       },
     });
+    console.log('body', body);
     return body.hits.hits.map((hit) => hit._source);
   } catch (error) {
     console.error('Error searching sentences:', error);
