@@ -16,34 +16,43 @@ async function loadAndIndexData() {
     console.log('Initializing Elasticsearch index...');
     await initializeIndex();
 
-    console.log('Index initialized. Loading data...');
-    const dataDir = path.join(__dirname, '../data');
-    const files = await fs.readdir(dataDir);
-    const jsonFiles = files.filter(
-      (file) => path.extname(file).toLowerCase() === '.json'
-    );
+    console.log('Checking if index is empty...');
+    const documentCount = await getDocumentCount();
 
-    let allSentences = [];
+    if (documentCount === 0) {
+      console.log('Index is empty. Loading and indexing data...');
+      const dataDir = path.join(__dirname, '../data');
+      const files = await fs.readdir(dataDir);
+      const jsonFiles = files.filter(
+        (file) => path.extname(file).toLowerCase() === '.json'
+      );
 
-    for (const file of jsonFiles) {
-      const filePath = path.join(dataDir, file);
-      const data = await fs.readFile(filePath, 'utf8');
-      const fileContent = JSON.parse(data);
+      let allSentences = [];
 
-      if (Array.isArray(fileContent)) {
-        allSentences = allSentences.concat(fileContent);
-      } else {
-        console.warn(
-          `File ${file} does not contain an array of sentences. Skipping.`
-        );
+      for (const file of jsonFiles) {
+        const filePath = path.join(dataDir, file);
+        const data = await fs.readFile(filePath, 'utf8');
+        const fileContent = JSON.parse(data);
+
+        if (Array.isArray(fileContent)) {
+          allSentences = allSentences.concat(fileContent);
+        } else {
+          console.warn(
+            `File ${file} does not contain an array of sentences. Skipping.`
+          );
+        }
       }
-    }
 
-    console.log(
-      `Loaded ${allSentences.length} sentences from ${jsonFiles.length} files. Indexing data...`
-    );
-    await indexSentences(allSentences);
-    console.log('Data indexed successfully');
+      console.log(
+        `Loaded ${allSentences.length} sentences from ${jsonFiles.length} files. Indexing data...`
+      );
+      await indexSentences(allSentences);
+      console.log('Data indexed successfully');
+    } else {
+      console.log(
+        `Index already contains ${documentCount} documents. Skipping indexing.`
+      );
+    }
   } catch (error) {
     console.error('Error loading and indexing data:', error);
     process.exit(1); // Exit the process if we can't load or index the data

@@ -32,6 +32,16 @@ async function initializeIndex() {
   }
 }
 
+async function getDocumentCount() {
+  try {
+    const { body } = await client.count({ index: INDEX_NAME });
+    return body.count;
+  } catch (error) {
+    console.error('Error getting document count:', error);
+    throw error;
+  }
+}
+
 async function indexSentences(sentences) {
   try {
     console.log(`Starting to index ${sentences.length} sentences...`);
@@ -57,11 +67,12 @@ async function indexSentences(sentences) {
   }
 }
 
-async function searchSentences(query) {
+async function searchSentences(query, size = 50) {
   try {
     const { body } = await client.search({
       index: INDEX_NAME,
       body: {
+        size: size,
         query: {
           bool: {
             should: [
@@ -72,7 +83,6 @@ async function searchSentences(query) {
         },
       },
     });
-    console.log('body', body);
     return body.hits.hits.map((hit) => hit._source);
   } catch (error) {
     console.error('Error searching sentences:', error);
@@ -84,4 +94,5 @@ module.exports = {
   initializeIndex,
   indexSentences,
   searchSentences,
+  getDocumentCount,
 };
