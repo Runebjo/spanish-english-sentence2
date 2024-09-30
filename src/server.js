@@ -15,14 +15,34 @@ async function loadAndIndexData() {
   try {
     console.log('Initializing Elasticsearch index...');
     await initializeIndex();
+
     console.log('Index initialized. Loading data...');
-    const data = await fs.readFile(
-      path.join(__dirname, '../data/sentences.json'),
-      'utf8'
+    const dataDir = path.join(__dirname, '../data');
+    const files = await fs.readdir(dataDir);
+    const jsonFiles = files.filter(
+      (file) => path.extname(file).toLowerCase() === '.json'
     );
-    const sentences = JSON.parse(data).translations;
-    console.log(`Loaded ${sentences.length} sentences. Indexing data...`);
-    await indexSentences(sentences);
+
+    let allSentences = [];
+
+    for (const file of jsonFiles) {
+      const filePath = path.join(dataDir, file);
+      const data = await fs.readFile(filePath, 'utf8');
+      const fileContent = JSON.parse(data);
+
+      if (fileContent.translations) {
+        allSentences = allSentences.concat(fileContent.translations);
+      } else {
+        console.warn(
+          `File ${file} does not contain a 'translations' array. Skipping.`
+        );
+      }
+    }
+
+    console.log(
+      `Loaded ${allSentences.length} sentences from ${jsonFiles.length} files. Indexing data...`
+    );
+    await indexSentences(allSentences);
     console.log('Data indexed successfully');
   } catch (error) {
     console.error('Error loading and indexing data:', error);
