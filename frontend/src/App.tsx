@@ -22,6 +22,23 @@ function App() {
     }
   };
 
+  const highlightText = (text: string, highlight: string) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+    const regex = new RegExp(`(${highlight})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <span key={index} className="text-yellow-600">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 py-6 flex flex-col justify-center sm:py-12">
       <div className="relative py-3 sm:max-w-xl sm:mx-auto">
@@ -57,8 +74,12 @@ function App() {
                 <ul className="list-disc space-y-2 mt-2">
                   {results.map((result, index) => (
                     <li key={index} className="flex flex-col">
-                      <span className="text-gray-300">{result.spanish}</span>
-                      <span className="text-gray-400">{result.english}</span>
+                      <span className="text-gray-300">
+                        {highlightText(result.spanish, query)}
+                      </span>
+                      <span className="text-gray-400">
+                        {highlightText(result.english, query)}
+                      </span>
                     </li>
                   ))}
                 </ul>
