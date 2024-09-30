@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     ports:
       - '3000:3000'
     depends_on:
@@ -10,6 +12,15 @@ services:
     environment:
       - ELASTICSEARCH_HOST=elasticsearch
       - ELASTICSEARCH_PORT=9200
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '8080:80'
+    depends_on:
+      - app
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
