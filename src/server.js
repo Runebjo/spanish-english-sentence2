@@ -2,7 +2,11 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const searchRoutes = require('./routes/search');
-const { initializeIndex, indexSentences } = require('./services/elasticsearch');
+const {
+  initializeIndex,
+  indexSentences,
+  getDocumentCount,
+} = require('./services/elasticsearch');
 
 const app = express();
 const port = 3000;
